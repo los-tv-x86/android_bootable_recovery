@@ -73,9 +73,11 @@ static bool IsRoDebuggable() {
   return android::base::GetBoolProperty("ro.debuggable", false);
 }
 
+#if 0
 static bool IsDeviceUnlocked() {
   return "orange" == android::base::GetProperty("ro.boot.verifiedbootstate", "");
 }
+#endif
 
 std::string get_build_type() {
   return android::base::GetProperty("ro.build.type", "");
@@ -216,11 +218,13 @@ static void copy_userdata_files() {
   android::base::SetLogger(UiLogger);
 }
 
+#if 0
 // Sets the usb config to 'state'.
 static bool SetUsbConfig(const std::string& state) {
   android::base::SetProperty("sys.usb.config", state);
   return android::base::WaitForProperty("sys.usb.state", state);
 }
+#endif
 
 static void ListenRecoverySocket(RecoveryUI* ui, std::atomic<Device::BuiltinAction>& action) {
   android::base::unique_fd sock_fd(android_get_control_socket("recovery"));
@@ -525,15 +529,19 @@ int main(int argc, char** argv) {
   listener_thread.detach();
 
   // Set up adb_keys and enable root before starting ADB.
-  if (get_build_type() != "user" && !fastboot) {
-    copy_userdata_files();
-    android::base::SetProperty("service.adb.root", "1");
+  // Guard it under a property as we on x86 doesn't need this
+  if (android::base::GetBoolProperty("sys.recovery.copy_userdata", false)) {
+    if (get_build_type() != "user" && !fastboot) {
+      copy_userdata_files();
+      android::base::SetProperty("service.adb.root", "1");
+    }
   }
 
   device->InitDevice();
 
   Device::BuiltinAction next_recovery_action = Device::NO_ACTION;
   while (true) {
+#if 0
     // We start adbd in recovery for the device with userdebug build or a unlocked bootloader.
     std::string usb_config =
         fastboot ? "fastboot" : IsRoDebuggable() || IsDeviceUnlocked() ? "adb" : "none";

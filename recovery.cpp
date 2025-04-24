@@ -574,6 +574,7 @@ change_menu:
       case Device::REBOOT_FASTBOOT:
       case Device::REBOOT_RECOVERY:
       case Device::REBOOT_RESCUE:
+      case Device::REBOOT_UEFI_SETTINGS:
         return chosen_action;
 
       case Device::REBOOT:

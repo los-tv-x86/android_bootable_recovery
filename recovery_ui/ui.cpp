@@ -340,6 +340,11 @@ int RecoveryUI::OnInputEvent(int fd, uint32_t epevents) {
     return -1;
   }
 
+  // Drop the event if we are in the console VT
+  if (is_in_console) {
+    return 0;
+  }
+
   // Analog Dpad handling.
   if (ev.type == EV_ABS && (ev.code == ABS_HAT0Y || ev.code == ABS_HAT0X)) {
     switch (ev.value) {

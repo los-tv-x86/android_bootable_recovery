@@ -1157,6 +1157,12 @@ bool ScreenRecoveryUI::Init(const std::string& locale) {
   }
   is_graphics_available = true;
 
+  gr_on_acquire_console = [this]() {
+    std::lock_guard<std::mutex> lg(this->updateMutex);
+    this->pagesIdentical = false; // Invalidate the cache to force a full redraw
+    this->update_screen_locked(); // Draw background and UI immediately
+  };
+
   if (!InitTextParams()) {
     return false;
   }
